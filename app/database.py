@@ -22,7 +22,25 @@ class Base(DeclarativeBase):
     """Declarative base for all ORM models."""
 
 
-engine = create_async_engine(settings.database_url, echo=False)
+def normalize_db_url(url: str) -> str:
+    """Accept Postgres URLs as pasted from Neon/Vercel/Heroku dashboards.
+
+    Those dashboards emit libpq-style URLs; the asyncpg driver needs
+    the SQLAlchemy dialect prefix, `ssl=` instead of `sslmode=`, and
+    no `channel_binding` parameter.
+    """
+    if url.startswith("postgres://"):
+        url = "postgresql+asyncpg://" + url.removeprefix("postgres://")
+    elif url.startswith("postgresql://"):
+        url = "postgresql+asyncpg://" + url.removeprefix("postgresql://")
+    url = url.replace("sslmode=", "ssl=")
+    url = url.replace("&channel_binding=require", "")
+    url = url.replace("?channel_binding=require&", "?")
+    url = url.replace("?channel_binding=require", "")
+    return url.rstrip("?&")
+
+
+engine = create_async_engine(normalize_db_url(settings.database_url), echo=False)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
