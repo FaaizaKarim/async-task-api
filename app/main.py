@@ -11,6 +11,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from fastapi.responses import RedirectResponse
 
 from .database import init_db
 from .rate_limit import rate_limit
@@ -41,3 +42,8 @@ app.include_router(tasks.router)
 @app.get("/health", tags=["meta"])
 async def health() -> dict[str, str]:
     return {"status": "ok"}
+
+@app.get("/", include_in_schema=False)
+async def root() -> RedirectResponse:
+    """Convenience: the API root redirects to the interactive docs."""
+    return RedirectResponse(url="/docs")
