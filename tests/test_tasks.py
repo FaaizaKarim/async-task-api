@@ -87,3 +87,10 @@ async def test_rate_limiter_returns_429():
     assert exc.value.status_code == 429
     # other clients are unaffected
     await limiter.check("5.6.7.8")
+
+
+async def test_root_serves_frontend(client: AsyncClient):
+    resp = await client.get("/")
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers["content-type"]
+    assert "TaskFlow" in resp.text

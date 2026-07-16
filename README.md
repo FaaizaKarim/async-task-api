@@ -1,6 +1,6 @@
 # Async Task Management REST API
 
-A production-style **async REST API** built with **FastAPI + SQLAlchemy 2.0 (asyncio)**: JWT authentication, per-IP rate limiting, ownership-enforced CRUD, PostgreSQL, Docker, and a fully offline test suite.
+A production-style **async REST API + task-board frontend** built with **FastAPI + SQLAlchemy 2.0 (asyncio)**: JWT authentication, per-IP rate limiting, ownership-enforced CRUD, PostgreSQL, Docker, a vanilla-JS single-page frontend served at the root path, and a fully offline test suite.
 
 ## Features
 
@@ -29,7 +29,7 @@ A production-style **async REST API** built with **FastAPI + SQLAlchemy 2.0 (asy
 | DELETE | `/tasks/{id}` | JWT | Delete |
 | GET | `/health` | — | Liveness probe |
 
-Interactive OpenAPI/Swagger docs at `/docs`.
+Interactive OpenAPI/Swagger docs at `/docs`; the task-board UI (register → sign in → create and move tasks across To do / In progress / Done) lives at `/`.
 
 ## Run it
 
