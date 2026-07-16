@@ -43,24 +43,38 @@ echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
 docker compose up --build
 ```
 
+## Deploy to Vercel
+
+The repo includes a serverless entry point (`api/index.py`) and `vercel.json`, so it deploys as-is:
+
+1. Create a free Postgres database at [neon.tech](https://neon.tech) and copy the connection string.
+2. Import the GitHub repo at [vercel.com/new](https://vercel.com/new) (framework preset: **Other**).
+3. In Project → Settings → Environment Variables add:
+   - `DATABASE_URL` — the Neon connection string (any dashboard format works; the app normalizes it for asyncpg)
+   - `JWT_SECRET` — a long random string
+4. Deploy. Interactive docs live at `https://<your-app>.vercel.app/docs`.
+
+Note: on serverless, the in-memory rate limiter is per-instance (use Redis/Upstash to make it global), and tables are created on cold start.
+
 ## Tests
 
 ```bash
 pytest -v
 ```
 
-13 tests, fully offline (SQLite): auth flow, password hashing/salting, token validation, full CRUD lifecycle, pagination and filtering, cross-user authorization, input validation, and the rate limiter. CI runs the suite on Python 3.11/3.12 and builds the Docker image.
+17 tests, fully offline (SQLite): auth flow, password hashing/salting, token validation, full CRUD lifecycle, pagination and filtering, cross-user authorization, input validation, DB URL normalization, and the rate limiter. CI runs the suite on Python 3.11/3.12 and builds the Docker image.
 
 ## Architecture notes
 
 - `config.py` — 12-factor settings from environment variables.
-- `database.py` — async engine/session factory; `Base` for ORM models.
+- `database.py` — async engine/session factory; `Base` for ORM models; dashboard URL normalization.
 - `auth.py` — hashing + JWT creation + `get_current_user` dependency.
 - `rate_limit.py` — asyncio-safe sliding-window limiter (swap store for Redis to scale horizontally).
 - `routers/` — thin route handlers; authorization lives in queries, validation in schemas.
+- `api/index.py` — Vercel serverless entry point (re-exports the ASGI app).
 
 Trade-offs are documented in code comments — e.g., `create_all` on startup instead of Alembic migrations (right-sized for the project), and an in-memory limiter (single instance) with the Redis upgrade path noted.
 
 ## Tech
 
-Python 3.11+ · FastAPI · SQLAlchemy 2.0 async · PostgreSQL / asyncpg · PyJWT · Docker · pytest / pytest-asyncio · GitHub Actions
+Python 3.11+ · FastAPI · SQLAlchemy 2.0 async · PostgreSQL / asyncpg · PyJWT · Docker · pytest / pytest-asyncio · GitHub Actions · Vercel
