@@ -4,82 +4,266 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TaskFlow — Async Task Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1117; --panel: #181b25; --card: #1f2330; --border: #2a2f40;
-    --text: #e8eaf2; --muted: #8b91a7; --accent: #6c8cff; --accent2: #4f6ef7;
-    --ok: #34d399; --warn: #fbbf24; --danger: #f87171;
+    --espresso: #261311;
+    --espresso-2: #2f1a16;
+    --espresso-3: #3a221c;
+    --emerald: #1a3934;
+    --emerald-2: #22463f;
+    --emerald-3: #2e5a50;
+    --emerald-glow: #3f7a6b;
+    --cream: #f2ead9;
+    --cream-dim: #d9cbb8;
+    --muted: #a08d7d;
+    --copper: #c98b45;
+    --copper-2: #dfa055;
+    --line: rgba(242, 234, 217, 0.09);
+    --ok: #57c996;
+    --danger: #e07856;
+    --shadow: 0 18px 46px rgba(0, 0, 0, 0.45);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
-  header h1 { font-size: 20px; letter-spacing: .3px; }
-  header h1 span { color: var(--accent); }
-  .badge { font-size: 12px; color: var(--muted); }
-  .badge a { color: var(--accent); text-decoration: none; }
-  #userbox { display: flex; gap: 12px; align-items: center; font-size: 14px; color: var(--muted); }
-  button { cursor: pointer; border: none; border-radius: 8px; font-size: 14px; padding: 9px 16px; background: var(--accent2); color: white; transition: filter .15s; }
-  button:hover { filter: brightness(1.15); }
-  button.ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-  /* auth */
-  #auth { max-width: 380px; margin: 9vh auto; background: var(--panel); padding: 34px; border-radius: 16px; border: 1px solid var(--border); }
-  #auth h2 { margin-bottom: 6px; }
-  #auth p { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
-  input, textarea { width: 100%; padding: 11px 13px; margin-bottom: 12px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
-  input:focus, textarea:focus { outline: 1px solid var(--accent); }
-  #auth button { width: 100%; margin-top: 4px; }
-  .switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--muted); }
-  .switch a { color: var(--accent); cursor: pointer; }
-  #msg { margin-top: 14px; font-size: 13px; text-align: center; min-height: 18px; }
+  body {
+    background: var(--espresso); color: var(--cream);
+    font-family: 'Inter', system-ui, sans-serif; min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--copper); color: var(--espresso); }
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--emerald-2); border-radius: 6px; }
+  .serif { font-family: 'Fraunces', Georgia, serif; }
+  button { cursor: pointer; border: none; font-family: inherit; }
+
+  /* ---------- AUTH ---------- */
+  #auth { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; }
+  .brand-side {
+    background:
+      radial-gradient(1100px 640px at -10% -20%, var(--emerald-3) 0%, transparent 55%),
+      radial-gradient(900px 700px at 110% 120%, #123029 0%, transparent 60%),
+      var(--emerald);
+    padding: 56px 64px; display: flex; flex-direction: column; justify-content: space-between;
+    border-right: 1px solid var(--line); position: relative; overflow: hidden;
+  }
+  .brand-side::after {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+    background: linear-gradient(90deg, var(--copper), var(--copper-2), var(--copper));
+  }
+  .logo { font-size: 26px; letter-spacing: .5px; }
+  .logo b { color: var(--copper-2); font-weight: 600; }
+  .hero h2 { font-size: clamp(34px, 4.2vw, 54px); line-height: 1.12; font-weight: 500; margin-bottom: 22px; }
+  .hero h2 em { color: var(--copper-2); font-style: italic; }
+  .hero p { color: var(--cream-dim); font-size: 16px; line-height: 1.7; max-width: 46ch; margin-bottom: 34px; }
+  .feats { list-style: none; display: grid; gap: 14px; }
+  .feats li { display: flex; gap: 12px; align-items: center; color: var(--cream-dim); font-size: 14.5px; }
+  .feats .dot {
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    background: rgba(201, 139, 69, .16); color: var(--copper-2);
+    display: grid; place-items: center; font-size: 13px; border: 1px solid rgba(201, 139, 69, .35);
+  }
+  .brand-foot { color: var(--muted); font-size: 12.5px; letter-spacing: 1.6px; text-transform: uppercase; }
+
+  .form-side { display: grid; place-items: center; padding: 48px 24px; }
+  .form-card { width: min(400px, 100%); }
+  .form-card h3 { font-size: 30px; font-weight: 500; margin-bottom: 8px; }
+  .form-card > p { color: var(--muted); font-size: 14px; margin-bottom: 30px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .field input {
+    width: 100%; padding: 14px 16px; font-size: 15px; color: var(--cream);
+    background: var(--espresso-2); border: 1px solid var(--line); border-radius: 12px;
+    transition: border-color .2s, box-shadow .2s; font-family: inherit;
+  }
+  .field input:focus { outline: none; border-color: var(--copper); box-shadow: 0 0 0 3px rgba(201, 139, 69, .18); }
+  .btn-primary {
+    width: 100%; padding: 15px; margin-top: 10px; border-radius: 12px; font-size: 15px; font-weight: 600;
+    background: linear-gradient(135deg, var(--copper), var(--copper-2)); color: var(--espresso);
+    transition: transform .15s, box-shadow .2s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(201, 139, 69, .3); }
+  .switch { text-align: center; margin-top: 22px; font-size: 13.5px; color: var(--muted); }
+  .switch a { color: var(--copper-2); cursor: pointer; font-weight: 500; }
+  .switch a:hover { text-decoration: underline; }
+  #msg { margin-top: 16px; font-size: 13.5px; text-align: center; min-height: 20px; }
   #msg.err { color: var(--danger); } #msg.ok { color: var(--ok); }
-  /* board */
-  #board { display: none; padding: 24px 28px; }
-  #newtask { display: flex; gap: 10px; margin-bottom: 24px; max-width: 720px; }
-  #newtask input { margin: 0; }
-  .columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
-  .col { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; min-height: 220px; }
-  .col h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 14px; display: flex; justify-content: space-between; }
-  .col h3 .count { color: var(--muted); }
-  .col.todo h3 { color: var(--warn); } .col.in_progress h3 { color: var(--accent); } .col.done h3 { color: var(--ok); }
-  .task { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; margin-bottom: 10px; }
-  .task .t { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-  .task .d { font-size: 13px; color: var(--muted); margin-bottom: 10px; white-space: pre-wrap; }
-  .task .actions { display: flex; gap: 8px; }
-  .task .actions button { padding: 5px 10px; font-size: 12px; background: var(--bg); border: 1px solid var(--border); color: var(--muted); }
-  .task .actions button:hover { color: var(--text); border-color: var(--accent); }
-  .task .actions button.del:hover { color: var(--danger); border-color: var(--danger); }
-  .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+
+  /* ---------- BOARD ---------- */
+  #board { display: none; min-height: 100vh; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 18px 34px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--espresso-2), var(--espresso));
+    position: sticky; top: 0; z-index: 5;
+  }
+  .topbar::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: linear-gradient(90deg, var(--copper), var(--copper-2), var(--copper)); }
+  .topbar .logo { font-size: 21px; }
+  .topbar .meta { font-size: 12.5px; color: var(--muted); }
+  .topbar .meta a { color: var(--copper-2); text-decoration: none; }
+  .userchip { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--emerald-2); color: var(--cream); font-weight: 600; font-size: 15px;
+    border: 1px solid var(--emerald-glow);
+  }
+  .userchip .email { font-size: 13.5px; color: var(--cream-dim); }
+  .btn-ghost {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    padding: 8px 15px; border-radius: 10px; font-size: 13px; transition: all .2s;
+  }
+  .btn-ghost:hover { color: var(--cream); border-color: var(--copper); }
+
+  .board-head { padding: 34px 34px 0; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; }
+  .board-head h2 { font-size: 32px; font-weight: 500; }
+  .board-head .sub { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  .progress-wrap { min-width: 260px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+  .progress-label b { color: var(--ok); }
+  .progress { height: 8px; border-radius: 6px; background: var(--espresso-3); overflow: hidden; }
+  .progress > div { height: 100%; width: 0; border-radius: 6px;
+    background: linear-gradient(90deg, var(--emerald-3), var(--ok)); transition: width .5s ease; }
+
+  .composer { display: flex; gap: 12px; margin: 26px 34px 8px; flex-wrap: wrap; }
+  .composer input {
+    flex: 1; min-width: 180px; padding: 14px 16px; font-size: 14.5px; color: var(--cream);
+    background: var(--espresso-2); border: 1px solid var(--line); border-radius: 12px; font-family: inherit;
+  }
+  .composer input:focus { outline: none; border-color: var(--copper); }
+  .composer button {
+    padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 14.5px;
+    background: linear-gradient(135deg, var(--copper), var(--copper-2)); color: var(--espresso);
+    transition: transform .15s, box-shadow .2s;
+  }
+  .composer button:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(201, 139, 69, .28); }
+
+  .columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; padding: 20px 34px 44px; }
+  .col {
+    background: linear-gradient(180deg, var(--emerald) 0%, #16302b 100%);
+    border: 1px solid var(--line); border-radius: 18px; padding: 18px; min-height: 300px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .col.dragover { border-color: var(--copper); box-shadow: 0 0 0 3px rgba(201, 139, 69, .2); }
+  .col h3 {
+    display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 600;
+    letter-spacing: 1.8px; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 16px;
+  }
+  .col h3 .pip { width: 9px; height: 9px; border-radius: 50%; }
+  .col.todo .pip { background: var(--copper-2); }
+  .col.in_progress .pip { background: #e8d9a8; }
+  .col.done .pip { background: var(--ok); }
+  .col h3 .count {
+    margin-left: auto; background: rgba(0,0,0,.25); border: 1px solid var(--line);
+    padding: 2px 10px; border-radius: 20px; font-size: 12px; color: var(--muted);
+  }
+  .task {
+    background: var(--espresso-2); border: 1px solid rgba(242,234,217,.1); border-radius: 14px;
+    padding: 15px 16px; margin-bottom: 12px; cursor: grab; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    animation: rise .3s ease both; transition: transform .15s, border-color .2s;
+  }
+  .task:hover { transform: translateY(-2px); border-color: rgba(201,139,69,.5); }
+  .task.dragging { opacity: .45; cursor: grabbing; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+  .task .t { font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+  .task .d { font-size: 13.5px; color: var(--muted); line-height: 1.55; margin-bottom: 12px; white-space: pre-wrap; }
+  .task .foot { display: flex; align-items: center; gap: 8px; }
+  .task .when { font-size: 11.5px; color: var(--muted); margin-right: auto; }
+  .task .foot button {
+    background: rgba(0,0,0,.25); border: 1px solid var(--line); color: var(--cream-dim);
+    padding: 6px 12px; border-radius: 9px; font-size: 12px; transition: all .18s;
+  }
+  .task .foot button:hover { border-color: var(--copper); color: var(--copper-2); }
+  .task .foot button.del:hover { border-color: var(--danger); color: var(--danger); }
+  .empty {
+    border: 1px dashed rgba(242,234,217,.16); border-radius: 14px; padding: 26px 10px;
+    text-align: center; color: var(--muted); font-size: 13px;
+  }
+
+  /* toast */
+  #toasts { position: fixed; bottom: 24px; right: 24px; display: grid; gap: 10px; z-index: 50; }
+  .toast {
+    background: var(--emerald-2); color: var(--cream); border: 1px solid var(--emerald-glow);
+    border-left: 3px solid var(--copper-2); padding: 13px 18px; border-radius: 12px;
+    font-size: 13.5px; box-shadow: var(--shadow); animation: slidein .25s ease;
+  }
+  .toast.err { border-left-color: var(--danger); }
+  @keyframes slidein { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; } }
+
+  @media (max-width: 880px) {
+    #auth { grid-template-columns: 1fr; }
+    .brand-side { padding: 40px 28px; gap: 30px; }
+    .topbar, .board-head, .composer, .columns { padding-left: 18px; padding-right: 18px; }
+    .userchip .email { display: none; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>Task<span>Flow</span></h1>
-  <span class="badge">FastAPI · asyncio · JWT &nbsp;|&nbsp; <a href="/docs">API docs</a></span>
-  <div id="userbox"></div>
-</header>
 
 <section id="auth">
-  <h2 id="authTitle">Sign in</h2>
-  <p>Async task manager demo — register a free account.</p>
-  <input id="email" type="email" placeholder="Email" autocomplete="username">
-  <input id="password" type="password" placeholder="Password (min 8 chars)" autocomplete="current-password">
-  <button id="authBtn" onclick="submitAuth()">Sign in</button>
-  <div class="switch"><span id="switchText">No account?</span> <a onclick="toggleMode()" id="switchLink">Register</a></div>
-  <div id="msg"></div>
+  <div class="brand-side">
+    <div class="logo serif">Task<b>Flow</b></div>
+    <div class="hero">
+      <h2 class="serif">Calm, focused<br>task management, <em>done right.</em></h2>
+      <p>A full-stack demo application: an asynchronous FastAPI backend with JWT authentication and query-level authorization, fronted by this dependency-free interface.</p>
+      <ul class="feats">
+        <li><span class="dot">✓</span> Async Python end to end — FastAPI + SQLAlchemy 2.0</li>
+        <li><span class="dot">✓</span> JWT auth with PBKDF2 password hashing</li>
+        <li><span class="dot">✓</span> Per-user data isolation enforced in every query</li>
+        <li><span class="dot">✓</span> Drag &amp; drop board, zero frontend frameworks</li>
+      </ul>
+    </div>
+    <div class="brand-foot">FastAPI · asyncio · PostgreSQL · Docker · <a href="/docs" style="color:var(--copper-2);text-decoration:none">API docs →</a></div>
+  </div>
+  <div class="form-side">
+    <div class="form-card">
+      <h3 class="serif" id="authTitle">Welcome back</h3>
+      <p id="authSub">Sign in to your board.</p>
+      <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Minimum 8 characters"></div>
+      <button class="btn-primary" id="authBtn" onclick="submitAuth()">Sign in</button>
+      <div class="switch"><span id="switchText">New here?</span> <a onclick="toggleMode()" id="switchLink">Create an account</a></div>
+      <div id="msg"></div>
+    </div>
+  </div>
 </section>
 
 <section id="board">
-  <div id="newtask">
-    <input id="title" placeholder="Task title" maxlength="200">
-    <input id="desc" placeholder="Description (optional)" maxlength="5000">
-    <button onclick="createTask()">Add</button>
+  <div class="topbar">
+    <div class="logo serif">Task<b style="color:var(--copper-2)">Flow</b></div>
+    <div class="meta">FastAPI · asyncio · JWT &nbsp;|&nbsp; <a href="/docs">API docs</a></div>
+    <div class="userchip">
+      <div class="avatar" id="avatar"></div>
+      <span class="email" id="uemail"></span>
+      <button class="btn-ghost" onclick="logout()">Sign out</button>
+    </div>
   </div>
+
+  <div class="board-head">
+    <div>
+      <h2 class="serif" id="greeting">Your board</h2>
+      <div class="sub">Drag cards between columns, or use the buttons.</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="ptext">0 of 0 complete</span><b id="ppct">0%</b></div>
+      <div class="progress"><div id="pbar"></div></div>
+    </div>
+  </div>
+
+  <div class="composer">
+    <input id="title" placeholder="What needs doing?" maxlength="200">
+    <input id="desc" placeholder="Add a detail (optional)" maxlength="5000">
+    <button onclick="createTask()">Add task</button>
+  </div>
+
   <div class="columns">
-    <div class="col todo"><h3>To do <span class="count" id="c-todo"></span></h3><div id="l-todo"></div></div>
-    <div class="col in_progress"><h3>In progress <span class="count" id="c-in_progress"></span></h3><div id="l-in_progress"></div></div>
-    <div class="col done"><h3>Done <span class="count" id="c-done"></span></h3><div id="l-done"></div></div>
+    <div class="col todo" data-status="todo"><h3><span class="pip"></span>To do<span class="count" id="c-todo">0</span></h3><div id="l-todo"></div></div>
+    <div class="col in_progress" data-status="in_progress"><h3><span class="pip"></span>In progress<span class="count" id="c-in_progress">0</span></h3><div id="l-in_progress"></div></div>
+    <div class="col done" data-status="done"><h3><span class="pip"></span>Done<span class="count" id="c-done">0</span></h3><div id="l-done"></div></div>
   </div>
 </section>
+
+<div id="toasts"></div>
 
 <script>
 let token = localStorage.getItem("token");
@@ -88,21 +272,29 @@ let registerMode = false;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
+function toast(text, isErr) {
+  const t = document.createElement("div");
+  t.className = "toast" + (isErr ? " err" : "");
+  t.textContent = text;
+  $("toasts").appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity .4s"; setTimeout(() => t.remove(), 400); }, 2600);
+}
 function setMsg(text, cls) { const m = $("msg"); m.textContent = text; m.className = cls || ""; }
 
 function toggleMode() {
   registerMode = !registerMode;
-  $("authTitle").textContent = registerMode ? "Create account" : "Sign in";
-  $("authBtn").textContent  = registerMode ? "Register" : "Sign in";
-  $("switchText").textContent = registerMode ? "Have an account?" : "No account?";
-  $("switchLink").textContent = registerMode ? "Sign in" : "Register";
+  $("authTitle").textContent = registerMode ? "Create your account" : "Welcome back";
+  $("authSub").textContent = registerMode ? "Free, instant, no email verification." : "Sign in to your board.";
+  $("authBtn").textContent = registerMode ? "Create account" : "Sign in";
+  $("switchText").textContent = registerMode ? "Already registered?" : "New here?";
+  $("switchLink").textContent = registerMode ? "Sign in instead" : "Create an account";
   setMsg("");
 }
 
 async function api(path, opts = {}) {
   opts.headers = Object.assign({}, opts.headers, token ? { "Authorization": "Bearer " + token } : {});
   const res = await fetch(path, opts);
-  if (res.status === 401 && token) { logout(); throw new Error("Session expired — sign in again"); }
+  if (res.status === 401 && token) { logout(); throw new Error("Session expired — please sign in again"); }
   if (!res.ok) {
     let detail = res.statusText;
     try { const b = await res.json(); detail = typeof b.detail === "string" ? b.detail : JSON.stringify(b.detail); } catch {}
@@ -113,6 +305,7 @@ async function api(path, opts = {}) {
 
 async function submitAuth() {
   const email = $("email").value.trim(), password = $("password").value;
+  if (!email || !password) { setMsg("Enter your email and password.", "err"); return; }
   try {
     if (registerMode) {
       await api("/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
@@ -129,13 +322,25 @@ async function submitAuth() {
 
 function logout() {
   token = null; localStorage.removeItem("token"); localStorage.removeItem("email");
-  $("board").style.display = "none"; $("auth").style.display = "block"; $("userbox").innerHTML = "";
+  $("board").style.display = "none"; $("auth").style.display = "grid";
 }
 
 async function showBoard() {
+  const email = localStorage.getItem("email") || "";
   $("auth").style.display = "none"; $("board").style.display = "block";
-  $("userbox").innerHTML = esc(localStorage.getItem("email") || "") + ' <button class="ghost" onclick="logout()">Sign out</button>';
+  $("uemail").textContent = email;
+  $("avatar").textContent = (email[0] || "?").toUpperCase();
+  const h = new Date().getHours();
+  $("greeting").textContent = (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + " ☕";
   await refresh();
+}
+
+function fmtWhen(iso) {
+  try {
+    const d = new Date(iso.endsWith("Z") ? iso : iso + "Z");
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " · " +
+           d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  } catch { return ""; }
 }
 
 async function refresh() {
@@ -144,45 +349,82 @@ async function refresh() {
   tasks.forEach(t => groups[t.status].push(t));
   for (const [status, list] of Object.entries(groups)) {
     $("c-" + status).textContent = list.length;
-    $("l-" + status).innerHTML = list.length ? list.map(card).join("") : '<div class="empty">Nothing here</div>';
+    $("l-" + status).innerHTML = list.length ? list.map(card).join("")
+      : '<div class="empty">' + (status === "done" ? "Finished tasks land here" : status === "in_progress" ? "Drag a card here to start it" : "Add a task above") + "</div>";
   }
+  const total = tasks.length, done = groups.done.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  $("ptext").textContent = done + " of " + total + " complete";
+  $("ppct").textContent = pct + "%";
+  $("pbar").style.width = pct + "%";
+  bindDrag();
 }
 
 const NEXT = { todo: "in_progress", in_progress: "done", done: "todo" };
 const NEXT_LABEL = { todo: "Start →", in_progress: "Finish ✓", done: "Reopen ↺" };
 
 function card(t) {
-  return `<div class="task">
+  return `<div class="task" draggable="true" data-id="${t.id}">
     <div class="t">${esc(t.title)}</div>
     ${t.description ? `<div class="d">${esc(t.description)}</div>` : ""}
-    <div class="actions">
+    <div class="foot">
+      <span class="when">${fmtWhen(t.created_at)}</span>
       <button onclick="move(${t.id}, '${NEXT[t.status]}')">${NEXT_LABEL[t.status]}</button>
       <button class="del" onclick="removeTask(${t.id})">Delete</button>
     </div>
   </div>`;
 }
 
+function bindDrag() {
+  document.querySelectorAll(".task").forEach(el => {
+    el.addEventListener("dragstart", e => {
+      el.classList.add("dragging");
+      e.dataTransfer.setData("text/plain", el.dataset.id);
+      e.dataTransfer.effectAllowed = "move";
+    });
+    el.addEventListener("dragend", () => el.classList.remove("dragging"));
+  });
+  document.querySelectorAll(".col").forEach(col => {
+    col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("dragover"); });
+    col.addEventListener("dragleave", () => col.classList.remove("dragover"));
+    col.addEventListener("drop", e => {
+      e.preventDefault(); col.classList.remove("dragover");
+      const id = e.dataTransfer.getData("text/plain");
+      if (id) move(Number(id), col.dataset.status);
+    });
+  });
+}
+
 async function createTask() {
   const title = $("title").value.trim();
-  if (!title) return;
-  await api("/tasks", { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, description: $("desc").value.trim() }) });
-  $("title").value = ""; $("desc").value = "";
-  refresh();
+  if (!title) { toast("Give the task a title first", true); return; }
+  try {
+    await api("/tasks", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, description: $("desc").value.trim() }) });
+    $("title").value = ""; $("desc").value = ""; $("title").focus();
+    toast("Task added");
+    refresh();
+  } catch (e) { toast(e.message, true); }
 }
 
 async function move(id, status) {
-  await api("/tasks/" + id, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-  refresh();
+  try {
+    await api("/tasks/" + id, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    refresh();
+  } catch (e) { toast(e.message, true); }
 }
 
 async function removeTask(id) {
-  await api("/tasks/" + id, { method: "DELETE" });
-  refresh();
+  try {
+    await api("/tasks/" + id, { method: "DELETE" });
+    toast("Task deleted");
+    refresh();
+  } catch (e) { toast(e.message, true); }
 }
 
 $("password").addEventListener("keydown", e => { if (e.key === "Enter") submitAuth(); });
 $("title").addEventListener("keydown", e => { if (e.key === "Enter") createTask(); });
+$("desc").addEventListener("keydown", e => { if (e.key === "Enter") createTask(); });
 if (token) showBoard();
 </script>
 </body>
