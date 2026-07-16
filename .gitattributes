@@ -1,0 +1,1 @@
+app/static/*.html -linguist-vendored -linguist-generated linguist-detectable
