@@ -68,7 +68,7 @@ pytest -v
 - `routers/` thin route handlers; authorization lives in queries, validation in schemas.
 - `api/index.py` Vercel serverless entry point (re-exports the ASGI app).
 
-Trade-offs are documented in code comments — e.g., `create_all` on startup instead of Alembic migrations (right-sized for the project), and an in-memory limiter (single instance) with the Redis upgrade path noted.
+Trade-offs are documented in code comments e.g., `create_all` on startup instead of Alembic migrations (right-sized for the project), and an in-memory limiter (single instance) with the Redis upgrade path noted.
 
 ## Tech
 
