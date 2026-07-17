@@ -2,6 +2,8 @@
 
 A production-style **async REST API + task-board frontend** built with **FastAPI + SQLAlchemy 2.0 (asyncio)**: JWT authentication, per-IP rate limiting, ownership-enforced CRUD, PostgreSQL, Docker, a vanilla-JS single-page frontend served at the root path, and a fully offline test suite.
 
+**Live demo:** [async-task-api-lzp4.vercel.app](https://async-task-api-lzp4.vercel.app) (task board) · [/docs](https://async-task-api-lzp4.vercel.app/docs) (OpenAPI/Swagger) — deployed on Vercel serverless with Neon PostgreSQL.
+
 ## Features
 
 **Async end to end** — async route handlers, async SQLAlchemy engine (asyncpg for PostgreSQL, aiosqlite for dev/tests), one DB session per request via dependency injection.
