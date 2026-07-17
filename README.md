@@ -2,7 +2,7 @@
 
 A production-style **async REST API + task-board frontend** built with **FastAPI + SQLAlchemy 2.0 (asyncio)**: JWT authentication, per-IP rate limiting, ownership-enforced CRUD, PostgreSQL, Docker, a vanilla-JS single-page frontend served at the root path, and a fully offline test suite.
 
-**Live demo:** [async-task-api-lzp4.vercel.app](https://async-task-api-lzp4.vercel.app) (task board) · [/docs](https://async-task-api-lzp4.vercel.app/docs) (OpenAPI/Swagger) — deployed on Vercel serverless with Neon PostgreSQL.
+**Live demo:** [async-task-api-lzp4.vercel.app](https://async-task-api-lzp4.vercel.app) (task board) · [/docs](https://async-task-api-lzp4.vercel.app/docs) (OpenAPI/Swagger)  deployed on Vercel serverless with Neon PostgreSQL.
 
 ## Features
 
@@ -14,7 +14,7 @@ A production-style **async REST API + task-board frontend** built with **FastAPI
 - Short-lived signed JWTs (OAuth2 password flow); the token subject is re-validated against the DB on every request.
 - Ownership enforced *in the query*: a valid token for user A can never read or mutate user B's tasks (no IDOR), and cross-user probes return 404, not 403  no existence oracle.
 - Login verifies a dummy hash when the email is unknown, so response timing doesn't reveal registered emails.
-- Separate input/output Pydantic schemas  server-controlled fields can't be set by clients, secrets can't leak into responses.
+- Separate input/output Pydantic schemas server-controlled fields can't be set by clients, secrets can't leak into responses.
 - Sliding-window rate limiter (HTTP 429 + Retry-After), keyed by client IP.
 - Docker image runs as non-root; secrets come from environment, never source.
 
@@ -47,14 +47,7 @@ docker compose up --build
 
 ## Deploy to Vercel
 
-The repo includes a serverless entry point (`api/index.py`) and `vercel.json`, so it deploys as-is:
-
-1. Create a free Postgres database at [neon.tech](https://neon.tech) and copy the connection string.
-2. Import the GitHub repo at [vercel.com/new](https://vercel.com/new) (framework preset: **Other**).
-3. In Project → Settings → Environment Variables add:
-   - `DATABASE_URL`  the Neon connection string (any dashboard format works; the app normalizes it for asyncpg)
-   - `JWT_SECRET`  a long random string
-4. Deploy. Interactive docs live at `https://<your-app>.vercel.app/docs`.
+Interactive docs live at `[https://<your-app>.vercel.app/docs](https://async-task-api-lzp4.vercel.app/)`.
 
 Note: on serverless, the in-memory rate limiter is per-instance (use Redis/Upstash to make it global), and tables are created on cold start.
 
